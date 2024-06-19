@@ -5,14 +5,17 @@
 
 bool stand = false;
 
-int playerPoints, dealerPoints;
+class createGameParticipant 
+{
+    public:
+        std::vector<int> cards;
+        int points;
+};
 
-std::vector<int> player;
-std::vector<int> dealer;
+createGameParticipant player;
+createGameParticipant dealer;
 
 std::string cardP1, cardP2, cardP3, cardP4, cardP5, cardP6, carda = " _____  |A .  || /.\\ ||(_._)||  |  ||____A|", card2 = " _____  |2    ||  ^  ||     ||  ^  ||___ 2|", card3 = " _____  |3    || ^ ^ ||     ||  ^  ||___ 3|", card4 = " _____  |4    || ^ ^ ||     || ^ ^ ||____4|", card5 = " _____  |5    || ^ ^ ||  ^  || ^ ^ ||____5|", card6 = " _____  |6    || ^ ^ || ^ ^ || ^ ^ ||____6|", card7 = " _____  |7    || ^ ^ ||^ ^ ^|| ^ ^ ||____7|", card8 = " _____  |8    ||^ ^ ^|| ^ ^ ||^ ^ ^||____8|", card9 = " _____  |9    ||^ ^ ^||^ ^ ^||^ ^ ^||____9|", card10 = " _____  |10^  ||^ ^ ^||^ ^ ^||^ ^ ^||___10|", cardj = " _____  |J  ww|| ^ {)||(.)%%|| | % ||__%%J|", cardq = " _____  |Q  ww|| ^ {(||(.)%%|| |%%%||_%%%Q|", cardk = " _____  |K  WW|| ^ {)||(.)%%|| |%%%||_%%%K|", cardque = " _____  |?    ||     ||     ||     ||____?|";
-
-char input1;
 
 enum winCase 
 {
@@ -25,17 +28,12 @@ enum winCase
     standoff,
     nothing
 };
-
 // Draws one random card for the player, and add the card to the players total card value and array of cards
-
 void drawCard(std::vector<int> &target, int &points){
-
     std::random_device device;
     std::mt19937 rng(device());
     std::uniform_int_distribution<std::mt19937::result_type> card(1,13);
-
     int cardNumber = card(rng);
-
         switch (cardNumber) 
         {
             case 1:
@@ -65,9 +63,7 @@ void drawCard(std::vector<int> &target, int &points){
                 break;
         };
 }
-
 // Checks if the player or dealer has busted, depending on the input
-
 bool bust(int points) 
 {
     if (points > 21) 
@@ -80,9 +76,7 @@ bool bust(int points)
     }
     return false;
 }
-
 // Checks if target has a blackjack
-
 bool blackjack(std::vector<int> target) 
 {
         if (target[0] == 1 && target[1] >= 10) 
@@ -98,40 +92,46 @@ bool blackjack(std::vector<int> target)
 
 // Checks if the game has ended
 
-winCase returnHowSomebodyWon() {
-    if (blackjack(player) == true && blackjack(dealer) == false) 
-    {
-        return playerBlackjack;
+winCase returnHowSomebodyWon() 
+{
+    if (blackjack(player.cards) == true) 
+    {   
+        drawCard(dealer.cards, dealer.points);
+        if (blackjack(dealer.cards) == false)
+        {
+            return playerBlackjack;
+        } else 
+        {
+            return standoff;
+        }
     }
-    if (blackjack(player) == false && blackjack(dealer) == true) 
+    if (blackjack(player.cards) == false && blackjack(dealer.cards) == true) 
     {
         return dealerBlackjack;
     }
-    else if (bust(dealerPoints) == true) 
+    else if (bust(dealer.points) == true) 
     {
         return dealerBust;
     }
-    else if (bust(playerPoints) == true) 
+    else if (bust(player.points) == true) 
     {
         return playerBust ;
     }
-    else if (bust(playerPoints) == false && dealerPoints < playerPoints && dealerPoints >= 17) 
+    else if (bust(player.points) == false && dealer.points < player.points && dealer.points >= 17) 
     {
         return playerWin;
     }
-    else if (playerPoints < dealerPoints && stand == true and dealerPoints >= 17 and bust(dealerPoints) == false) 
+    else if (player.points < dealer.points && stand == true and dealer.points >= 17 and bust(dealer.points) == false) 
     {
         return dealerWin;
     }
-    else if (playerPoints == dealerPoints && stand == true && dealerPoints >= 17) 
+    else if (player.points == dealer.points && stand == true && dealer.points >= 17) 
     {
         return standoff;
     }
     return nothing;
 }
-
 // Checks if Somebody has won
-
 bool somebodyHasWon()
 {
     if (returnHowSomebodyWon() != nothing)
@@ -143,9 +143,7 @@ bool somebodyHasWon()
         return false;
     }
 }
-
 // Resets print queue
-
 void resetPrintQueue()
 {
     cardP1 = "";
@@ -158,7 +156,8 @@ void resetPrintQueue()
 
 // Adds card to print queue
 
-void addCard(std::string card) {
+void addCard(std::string card) 
+{
     cardP1 += card.substr(0, 7);
     cardP2 += card.substr(8, 7);
     cardP3 += card.substr(15, 7);
@@ -169,10 +168,12 @@ void addCard(std::string card) {
 
 // Prints a card
 
-void displayCard(std::vector<int> inputCard, int inputNum) {
+void displayCard(std::vector<int> inputCard) 
+{
     resetPrintQueue();
 
-    for (int i = 0; i < inputNum; i++) {
+    for (int i = 0; i < inputCard.size(); i++) 
+    {
         switch (inputCard[i]) 
         {
             case 0:
@@ -223,20 +224,18 @@ void displayCard(std::vector<int> inputCard, int inputNum) {
     }
     std::cout << cardP1 << '\n' << cardP2 << '\n' <<  cardP3 << '\n' << cardP4 << '\n' <<  cardP5 << '\n' << cardP6 << '\n';
 }
-
 // Prints the game
 
 void displayGame() 
 {
-    std::cout << "-----------------------" << '\n' << dealerPoints << '\n';
-    displayCard(dealer, dealer.size());
-    std::cout << "-----------------------" << '\n' << playerPoints << '\n';
-    displayCard(player, player.size());
+    std::cout << "-----------------------" << '\n' << dealer.points << '\n';
+    displayCard(dealer.cards);
+    std::cout << "-----------------------" << '\n' << player.points << '\n';
+    displayCard(player.cards);
     std::cout << "-----------------------" << '\n';
 }
 
 // Prints game result
-
 void printResult(winCase result)
 {
     switch (result)
@@ -244,10 +243,10 @@ void printResult(winCase result)
         case nothing:
             break;
         case playerWin:
-            std::cout << "-----------------------" << '\n' << "You won with " << playerPoints << " points!" << '\n' << "-----------------------" << '\n';
+            std::cout << "-----------------------" << '\n' << "You won with " << player.points << " points!" << '\n' << "-----------------------" << '\n';
             break;
         case dealerWin:
-            std::cout << "-----------------------" << '\n' << "Dealer won with " << dealerPoints << " points!" << '\n' << "-----------------------" << '\n';
+            std::cout << "-----------------------" << '\n' << "Dealer won with " << dealer.points << " points!" << '\n' << "-----------------------" << '\n';
             break;
         case playerBust:
             std::cout << "-----------------------" << '\n' << "Player went bust!" << '\n' << "-----------------------" << '\n';
@@ -268,33 +267,30 @@ void printResult(winCase result)
             break;
     }
 }
-
 // displays the game
-
 void clearAndDisplayGame()
 {
     system("cls");
     displayGame();
 }
 // Resets values of the game
-
 void resetGame()
 {
     stand = false;
-    player.clear();
-    dealer.clear();
-    dealerPoints = 0;
-    playerPoints = 0;
+    player.cards.clear();
+    dealer.cards.clear();
+    dealer.points = 0;
+    player.points = 0;
 }
 
 // Sets up the game by giving out cards
 
 void setup()
 {
-    drawCard(dealer, dealerPoints);
-    drawCard(player, playerPoints);
-    drawCard(player, playerPoints);
-    dealer.push_back(0);
+    drawCard(dealer.cards, dealer.points);
+    drawCard(player.cards, player.points);
+    drawCard(player.cards, player.points);
+    dealer.cards.push_back(0);
     clearAndDisplayGame();
 }
 
@@ -302,6 +298,8 @@ void setup()
 
 void playerHitOrStandLoop()
 {
+    char input1;
+
     while (true)
     {
         if (somebodyHasWon() == true)
@@ -309,10 +307,8 @@ void playerHitOrStandLoop()
             Sleep(1000);
             break;
         }
-
         std::cout << "(S)tand or (H)it: ";
         std::cin >> input1;
-
         if (input1 == 's' || input1 == 'S')
         {
             stand = true;
@@ -320,31 +316,28 @@ void playerHitOrStandLoop()
         } 
         else if (input1 == 'h' || input1 == 'H')
         {
-            drawCard(player, playerPoints);
+            drawCard(player.cards, player.points);
             system("cls");
             displayGame();
         }
     }
 }
-
 // Makes the dealer draw cards
 
 void dealerDrawCardsLoop() 
 {
-    dealer.erase(std::next(dealer.begin()));
+    dealer.cards.erase(std::next(dealer.cards.begin()));
 
     int i = 0;
 
     while (i <= 16 && somebodyHasWon() == false)
     {
-        drawCard(dealer, dealerPoints);
+        drawCard(dealer.cards, dealer.points);
         clearAndDisplayGame();
         Sleep(1000);
     }
 }
-
 // Finishes the game and resets it
-
 void endgame()
 {  
     system("cls");
@@ -358,16 +351,12 @@ int main ()
     while (true)
     {
         setup();
-
         playerHitOrStandLoop();
-
         if (somebodyHasWon() == true)
         {
             goto endGame;
         }
-
         dealerDrawCardsLoop();
-
         endGame: 
             endgame();
     }
